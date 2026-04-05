@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Danh sach sinh vien</title>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Danh sach sinh vien</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Ma SV</th>
+                <th>Ho ten</th>
+                <th>Khoa</th>
+                <th>Khoa hoc</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        // ===== CLASS SINH VIEN =====
+        class Student {
+            constructor(id, name) {
+                this.id = id;
+                this.name = name;
+            }
+
+            // lấy khóa học
+            getCourse() {
+                return "K" + this.id.substring(0, 2);
+            }
+
+            // lấy khoa
+            getFaculty() {
+                var code = this.id.substring(3, 6);
+                var map = {
+                    "404": "CNTT&KTS",
+                    "401": "Ngan hang",
+                    "408": "KHDL"
+                };
+                return map[code] || "Khac";
+            }
+
+            // tạo email
+            getEmail() {
+                var name = this.name.toLowerCase();
+                name = name.replace("(lt)", "").trim();
+
+                var arr = name.split(" ");
+                var firstName = arr[arr.length - 1];
+                var lastName = arr[0];
+                var middle = "";
+
+                for (var i = 1; i < arr.length - 1; i++) {
+                    middle += arr[i][0];
+                }
+
+                return firstName + middle + lastName[0] + "." + this.id.toLowerCase() + "@hvnh.edu.vn";
+            }
+        }
+
+        // ===== DATA =====
+        var data = [
+            ["27A4042905", "Ngo Hai An"],
+            ["26A4040701", "Nguyen Huu An"],
+            ["27A4042909", "Nguyen Hoang Anh"],
+            ["27A4042911", "Nguyen Viet Anh"],
+            ["26A4041215", "Phung Gia Bao"]
+        ];
+
+        // ===== HIEN THI =====
+        var html = "";
+
+        for (var i = 0; i < data.length; i++) {
+            var sv = new Student(data[i][0], data[i][1]);
+
+            html += "<tr>";
+            html += "<td>" + (i + 1) + "</td>";
+            html += "<td>" + sv.id + "</td>";
+            html += "<td>" + sv.name + "</td>";
+            html += "<td>" + sv.getFaculty() + "</td>";
+            html += "<td>" + sv.getCourse() + "</td>";
+            html += "<td>" + sv.getEmail() + "</td>";
+            html += "</tr>";
+        }
+
+        document.getElementById("tableBody").innerHTML = html;
+
+    </script>
+
+</body>
+
+</html>
