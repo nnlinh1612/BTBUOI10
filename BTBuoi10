@@ -1,107 +1,67 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="vi">
 
 <head>
-    <title>Danh sach sinh vien</title>
+    <meta charset="UTF-8" />
+    <title>Danh sách sinh viên</title>
     <style>
-        table,
+        body {
+            font-family: Arial;
+            background: white;
+            color: black;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: black;
+        }
+
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 90%;
+            background: white;
+        }
+
         th,
         td {
-            border: 1px solid black;
-            border-collapse: collapse;
-            padding: 5px;
+            padding: 10px;
+            border: 1px solid #000;
+            color: black;
+        }
+
+        th {
+            background: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #eaeaea;
+        }
+
+        input {
+            margin: 20px;
         }
     </style>
 </head>
 
 <body>
-
-    <h2>Danh sach sinh vien</h2>
-    <table>
+    <h2>DANH SÁCH SINH VIÊN</h2> <input type="file" id="fileInput" />
+    <table id="table">
         <thead>
             <tr>
-                <th>STT</th>
-                <th>Ma SV</th>
-                <th>Ho ten</th>
-                <th>Khoa</th>
-                <th>Khoa hoc</th>
+                <th>Họ tên</th>
+                <th>Mã SV</th>
                 <th>Email</th>
+                <th>Khóa</th>
+                <th>Khoa</th>
             </tr>
         </thead>
-        <tbody id="tableBody"></tbody>
+        <tbody></tbody>
     </table>
-
-    <script>
-        // ===== CLASS SINH VIEN =====
-        class Student {
-            constructor(id, name) {
-                this.id = id;
-                this.name = name;
-            }
-
-            // lấy khóa học
-            getCourse() {
-                return "K" + this.id.substring(0, 2);
-            }
-
-            // lấy khoa
-            getFaculty() {
-                var code = this.id.substring(3, 6);
-                var map = {
-                    "404": "CNTT&KTS",
-                    "401": "Ngan hang",
-                    "408": "KHDL"
-                };
-                return map[code] || "Khac";
-            }
-
-            // tạo email
-            getEmail() {
-                var name = this.name.toLowerCase();
-                name = name.replace("(lt)", "").trim();
-
-                var arr = name.split(" ");
-                var firstName = arr[arr.length - 1];
-                var lastName = arr[0];
-                var middle = "";
-
-                for (var i = 1; i < arr.length - 1; i++) {
-                    middle += arr[i][0];
-                }
-
-                return firstName + middle + lastName[0] + "." + this.id.toLowerCase() + "@hvnh.edu.vn";
-            }
-        }
-
-        // ===== DATA =====
-        var data = [
-            ["27A4042905", "Ngo Hai An"],
-            ["26A4040701", "Nguyen Huu An"],
-            ["27A4042909", "Nguyen Hoang Anh"],
-            ["27A4042911", "Nguyen Viet Anh"],
-            ["26A4041215", "Phung Gia Bao"]
-        ];
-
-        // ===== HIEN THI =====
-        var html = "";
-
-        for (var i = 0; i < data.length; i++) {
-            var sv = new Student(data[i][0], data[i][1]);
-
-            html += "<tr>";
-            html += "<td>" + (i + 1) + "</td>";
-            html += "<td>" + sv.id + "</td>";
-            html += "<td>" + sv.name + "</td>";
-            html += "<td>" + sv.getFaculty() + "</td>";
-            html += "<td>" + sv.getCourse() + "</td>";
-            html += "<td>" + sv.getEmail() + "</td>";
-            html += "</tr>";
-        }
-
-        document.getElementById("tableBody").innerHTML = html;
-
-    </script>
-
+    <script> class SinhVien { constructor(fullName, studentId) { this.fullName = fullName || ""; this.studentId = (studentId || "").toLowerCase(); } generateEmail() { let parts = this.fullName.trim().split(" "); let firstName = parts[parts.length - 1] || ""; let otherParts = parts.slice(0, parts.length - 1); let initials = otherParts.map((p) => p[0] || "").join(""); const removeVN = (str) => { return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D"); }; firstName = removeVN(firstName); initials = removeVN(initials); return (firstName + initials + "." + this.studentId + "@hvnh.edu.vn").toLowerCase(); } getCourse() { return this.studentId.substring(0, 2); } getFaculty() { let facultyCode = this.studentId.substring(2, 6); let facultyMap = { a404: "CNTT & KTS", a401: "Ngân hàng", a408: "Khoa học dữ liệu", a403: "Quản trị kinh doanh", a405: "Kinh doanh quốc tế", a407: "Kinh tế", a406: "Luật", a402: "Kế toán - Kiểm toán", }; return facultyMap[facultyCode] || facultyCode; } } // Đọc file Excel document .getElementById("fileInput") .addEventListener("change", function (e) { let file = e.target.files[0]; let reader = new FileReader(); reader.onload = function (e) { let data = new Uint8Array(e.target.result); let workbook = XLSX.read(data, { type: "array" }); let sheet = workbook.Sheets[workbook.SheetNames[0]]; let json = XLSX.utils.sheet_to_json(sheet); console.log("DATA EXCEL:", json); renderTable(json); }; reader.readAsArrayBuffer(file); }); // Hiển thị bảng function renderTable(data) { let tbody = document.querySelector("#table tbody"); tbody.innerHTML = ""; data.forEach((row) => { let fullName = row["Họ tên"] || row["Ho ten"] || row["Tên"] || Object.values(row)[0]; let studentId = row["Mã SV"] || row["Ma SV"] || row["MSV"] || Object.values(row)[1]; // Bỏ qua dòng lỗi if (!fullName || !studentId) return; let sv = new SinhVien(fullName, studentId); let tr = <tr> <td>${sv.fullName}</td> <td>${sv.studentId}</td> <td>${sv.generateEmail()}</td> <td>K${sv.getCourse()}</td> <td>${sv.getFaculty()}</td> </tr> ; tbody.innerHTML += tr; }); } </script>
 </body>
 
 </html>
